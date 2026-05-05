@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字华容道</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2575fc;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-gap: 5px;
+            margin: 0 auto 20px;
+            background-color: #333;
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tile {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #3498db;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .tile:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+        
+        .empty {
+            background-color: transparent;
+            cursor: default;
+        }
+        
+        .empty:hover {
+            background-color: transparent;
+            transform: none;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background-color: #2575fc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            background-color: #1a5fd8;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .difficulty {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .difficulty button {
+            flex: 1;
+            background-color: #6a11cb;
+        }
+        
+        .difficulty button.active {
+            background-color: #4a0da3;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+        }
+        
+        .message.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .message-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .message h2 {
+            color: #27ae60;
+            margin-bottom: 15px;
+            font-size: 2rem;
+        }
+        
+        .message p {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .message button {
+            background-color: #27ae60;
+            font-size: 1.1rem;
+            padding: 12px 25px;
+        }
+        
+        @media (max-width: 500px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .tile {
+                font-size: 1.2rem;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>数字华容道</h1>
+        
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">步数</div>
+                <div class="info-value" id="moves">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">时间</div>
+                <div class="info-value" id="timer">00:00</div>
+            </div>
+        </div>
+        
+        <div class="difficulty">
+            <button id="easy" class="active">3×3</button>
+            <button id="medium">4×4</button>
+            <button id="hard">5×5</button>
+        </div>
+        
+        <div class="game-board" id="board"></div>
+        
+        <div class="controls">
+            <button id="shuffle">重新开始</button>
+            <button id="hint">提示</button>
+            <button id="solve">自动完成</button>
+        </div>
+    </div>
+    
+    <div class="message" id="message">
+        <div class="message-content">
+            <h2>恭喜！</h2>
+            <p>你成功完成了数字华容道！</p>
+            <p id="result-stats">用时: 00:00, 步数: 0</p>
+            <button id="play-again">再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态变量
+        let boardSize = 3;
+        let board = [];
+        let emptyPos = { row: 0, col: 0 };
+        let moves = 0;
+        let timer = 0;
+        let timerInterval = null;
+        let isGameStarted = false;
+        let isGameCompleted = false;
+        
+        // DOM元素
+        const boardElement = document.getElementById('board');
+        const movesElement = document.getElementById('moves');
+        const timerElement = document.getElementById('timer');
+        const messageElement = document.getElementById('message');
+        const resultStatsElement = document.getElementById('result-stats');
+        
+        // 初始化游戏
+        function initGame() {
+            // 重置游戏状态
+            board = [];
+            moves = 0;
+            timer = 0;
+            isGameStarted = false;
+            isGameCompleted = false;
+            
+            // 更新UI
+            movesElement.textContent = moves;
+            timerElement.textContent = "00:00";
+            
+            // 清除计时器
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            // 创建游戏板
+            createBoard();
+            
+            // 隐藏消息
+            messageElement.classList.remove('show');
+        }
+        
+        // 创建游戏板
+        function createBoard() {
+            // 设置网格布局
+            boardElement.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+            boardElement.style.gridTemplateRows = `repeat(${boardSize}, 1fr)`;
+            boardElement.style.width = `${boardSize * 80}px`;
+            boardElement.style.height = `${boardSize * 80}px`;
+            
+            // 清空游戏板
+            boardElement.innerHTML = '';
+            
+            // 生成数字数组
+            const numbers = Array.from({ length: boardSize * boardSize - 1 }, (_, i) => i + 1);
+            
+            // 打乱数字
+            shuffleArray(numbers);
+            
+            // 创建瓦片
+            for (let i = 0; i < boardSize; i++) {
+                board[i] = [];
+                for (let j = 0; j < boardSize; j++) {
+                    const index = i * boardSize + j;
+                    
+                    if (index < boardSize * boardSize - 1) {
+                        const number = numbers[index];
+                        board[i][j] = number;
+                        
+                        const tile = document.createElement('div');
+                        tile.className = 'tile';
+                        tile.textContent = number;
+                        tile.dataset.row = i;
+                        tile.dataset.col = j;
+                        
+                        tile.addEventListener('click', () => moveTile(i, j));
+                        
+                        boardElement.appendChild(tile);
+                    } else {
+                        // 空瓦片
+                        board[i][j] = 0;
+                        emptyPos.row = i;
+                        emptyPos.col = j;
+                        
+                        const emptyTile = document.createElement('div');
+                        emptyTile.className = 'tile empty';
+                        boardElement.appendChild(emptyTile);
+                    }
+                }
+            }
+        }
+        
+        // 打乱数组
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        // 移动瓦片
+        function moveTile(row, col) {
+            // 如果游戏已完成，不允许移动
+            if (isGameCompleted) return;
+            
+            // 检查是否可以移动（是否与空位相邻）
+            if (
+                (Math.abs(row - emptyPos.row) === 1 && col === emptyPos.col) ||
+                (Math.abs(col - emptyPos.col) === 1 && row === emptyPos.row)
+            ) {
+                // 开始计时（如果是第一次移动）
+                if (!isGameStarted) {
+                    startTimer();
+                    isGameStarted = true;
+                }
+                
+                // 交换瓦片和空位
+                board[emptyPos.row][emptyPos.col] = board[row][col];
+                board[row][col] = 0;
+                
+                // 更新空位位置
+                emptyPos.row = row;
+                emptyPos.col = col;
+                
+                // 更新UI
+                updateBoard();
+                
+                // 增加步数
+                moves++;
+                movesElement.textContent = moves;
+                
+                // 检查是否完成
+                checkCompletion();
+            }
+        }
+        
+        // 更新游戏板显示
+        function updateBoard() {
+            const tiles = boardElement.querySelectorAll('.tile:not(.empty)');
+            
+            tiles.forEach(tile => {
+                const row = parseInt(tile.dataset.row);
+                const col = parseInt(tile.dataset.col);
+                tile.textContent = board[row][col];
+            });
+        }
+        
+        // 开始计时器
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timer++;
+                const minutes = Math.floor(timer / 60).toString().padStart(2, '0');
+                const seconds = (timer % 60).toString().padStart(2, '0');
+                timerElement.textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+        
+        // 检查游戏是否完成
+        function checkCompletion() {
+            let expected = 1;
+            
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    // 跳过最后一个位置（应该是空位）
+                    if (i === boardSize - 1 && j === boardSize - 1) {
+                        if (board[i][j] !== 0) return false;
+                    } else {
+                        if (board[i][j] !== expected) return false;
+                        expected++;
+                    }
+                }
+            }
+            
+            // 游戏完成
+            isGameCompleted = true;
+            clearInterval(timerInterval);
+            
+            // 显示完成消息
+            resultStatsElement.textContent = `用时: ${timerElement.textContent}, 步数: ${moves}`;
+            messageElement.classList.add('show');
+        }
+        
+        // 提示功能
+        function showHint() {
+            if (isGameCompleted) return;
+            
+            // 找到可以移动的瓦片
+            const directions = [
+                { row: emptyPos.row - 1, col: emptyPos.col }, // 上
+                { row: emptyPos.row + 1, col: emptyPos.col }, // 下
+                { row: emptyPos.row, col: emptyPos.col - 1 }, // 左
+                { row: emptyPos.row, col: emptyPos.col + 1 }  // 右
+            ];
+            
+            const validMoves = directions.filter(pos => 
+                pos.row >= 0 && pos.row < boardSize && 
+                pos.col >= 0 && pos.col < boardSize
+            );
+            
+            if (validMoves.length > 0) {
+                // 随机选择一个可移动的瓦片
+                const move = validMoves[Math.floor(Math.random() * validMoves.length)];
+                
+                // 高亮显示提示的瓦片
+                const tiles = boardElement.querySelectorAll('.tile:not(.empty)');
+                tiles.forEach(tile => {
+                    const row = parseInt(tile.dataset.row);
+                    const col = parseInt(tile.dataset.col);
+                    
+                    if (row === move.row && col === move.col) {
+                        tile.style.backgroundColor = '#e74c3c';
+                        tile.style.transform = 'scale(1.1)';
+                        
+                        setTimeout(() => {
+                            tile.style.backgroundColor = '';
+                            tile.style.transform = '';
+                        }, 1000);
+                    }
+                });
+            }
+        }
+        
+        // 自动完成功能（简化版，仅演示）
+        function autoSolve() {
+            if (isGameCompleted) return;
+            
+            alert("自动完成功能正在开发中，目前仅提供提示功能。");
+            showHint();
+        }
+        
+        // 事件监听器
+        document.getElementById('shuffle').addEventListener('click', initGame);
+        document.getElementById('hint').addEventListener('click', showHint);
+        document.getElementById('solve').addEventListener('click', autoSolve);
+        document.getElementById('play-again').addEventListener('click', initGame);
+        
+        // 难度选择
+        document.getElementById('easy').addEventListener('click', () => {
+            if (boardSize !== 3) {
+                boardSize = 3;
+                document.getElementById('easy').classList.add('active');
+                document.getElementById('medium').classList.remove('active');
+                document.getElementById('hard').classList.remove('active');
+                initGame();
+            }
+        });
+        
+        document.getElementById('medium').addEventListener('click', () => {
+            if (boardSize !== 4) {
+                boardSize = 4;
+                document.getElementById('easy').classList.remove('active');
+                document.getElementById('medium').classList.add('active');
+                document.getElementById('hard').classList.remove('active');
+                initGame();
+            }
+        });
+        
+        document.getElementById('hard').addEventListener('click', () => {
+            if (boardSize !== 5) {
+                boardSize = 5;
+                document.getElementById('easy').classList.remove('active');
+                document.getElementById('medium').classList.remove('active');
+                document.getElementById('hard').classList.add('active');
+                initGame();
+            }
+        });
+        
+        // 初始化游戏
+        initGame();
+    </script>
+</body>
+</html>
